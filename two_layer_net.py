@@ -7,6 +7,9 @@ import random
 import statistics
 from typing import Dict, List, Callable, Optional
 
+
+import eecs598
+
 def sample_batch(
     X: torch.Tensor, y: torch.Tensor, num_train: int, batch_size: int
 ):
@@ -240,8 +243,16 @@ def nn_forward_backward(
     # (Check Numeric Stability in http://cs231n.github.io/linear-classify/).   #
     ############################################################################
     # Replace "pass" statement with your code
-    loss = torch.nn.functional.cross_entropy(scores, y)
-    loss += reg * (torch.sum(W1 * W1) + torch.sum(W2 * W2))
+     # loss = torch.nn.functional.cross_entropy(scores, y)
+    # loss += reg * (torch.sum(W1 * W1) + torch.sum(W2 * W2))
+    exp_scores = torch.exp(scores) # compute exponential value of scores
+    probs = exp_scores / torch.sum(exp_scores, dim=1, keepdim=True) # divide by sum of exponential scores
+    correct_logprobs = -torch.log(probs[torch.arange(N), y]) 
+    # probs is a tensor of shape (N, C), the `torch.arange(N)` 
+    # will generate a tensor 0,1,...,N-1, and y will specify the
+    # correct output, using this two index, we can get the probability
+    # of the correct output
+    loss = torch.sum(correct_logprobs) / N # compute the average loss
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -255,20 +266,11 @@ def nn_forward_backward(
     # tensor of same size                                                     #
     ###########################################################################
     # Replace "pass" statement with your code
-    num_classes = W2.shape[1]
-    num_train = X.shape[0]
     # Compute the gradient of the loss with respect to scores
-    dscores = torch.nn.functional.one_hot(y, num_classes).float() # one-hot encoding
-    dscores -= torch.nn.functional.softmax(scores, dim=1) # softmax gradient
-    dscores /= num_train # average
-    grads["W2"] = torch.matmul(h1.T, dscores) + 2 * reg * W2
-    grads["b2"] = torch.sum(dscores, dim=0) # sum over N
-    dhidden = torch.matmul(dscores, W2.T)
-    dhidden[h1 <= 0] = 0 # ReLU gradient
-    grads["W1"] = torch.matmul(X.T, dhidden) + 2 * reg * W1
-    grads["b1"] = torch.sum(dhidden, dim=0) # sum over N
+    # for the softmax function, the gradient is simply the predicted probability
     
-    ###########################################################################
+    
+    ##################################################1######################
     #                             END OF YOUR CODE                            #
     ###########################################################################
 
