@@ -462,11 +462,10 @@ def nn_get_search_params():
     # classifier.                                                             #
     ###########################################################################
     # Replace "pass" statement with your code
-    learning_rates = [1e-3, 1e-2, 1e-1]
-    hidden_sizes = [8, 16, 32]
-    regularization_strengths = [1e-3, 1e-2, 1e-1]
-    learning_rate_decays = [1.0, 0.95, 0.9]
-    
+    learning_rates = [1e-3, 1e-2, 1e-1, 0.5, 1]
+    hidden_sizes = [128]
+    regularization_strengths = [1e-2]
+    learning_rate_decays = [1.0, 0.95, 0.9, 0.925, 0.975]  
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
@@ -536,6 +535,8 @@ def find_best_net(
     y_val = data_dict['y_val']
     learning_rates, hidden_sizes, regularization_strengths, learning_rate_decays = get_param_set_fn()
     best_val_acc = 0.0
+    best_lr = 0
+    best_lrd = 0
     for lr in learning_rates:
         for hs in hidden_sizes:
             for reg in regularization_strengths:
@@ -547,8 +548,11 @@ def find_best_net(
                         best_val_acc = val_acc
                         best_net = net
                         best_stat = stat
+                        best_lr = lr
+                        best_lrd = lrd
     #############################################################################
     #                               END OF YOUR CODE                            #
     #############################################################################
-
+    print("best learining rate: " + str(best_lr))
+    print("best learning rate decay: " + str(best_lrd))
     return best_net, best_stat, best_val_acc
