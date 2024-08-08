@@ -210,7 +210,7 @@ def nn_forward_backward(
       is not passed then we only return scores, and if it is passed then we
       instead return the loss and gradients.
     - reg: Regularization strength.
-
+.
     Returns:
     If y is None, return a tensor scores of shape (N, C) where scores[i, c] is
     the score for class c on input X[i].
@@ -253,6 +253,7 @@ def nn_forward_backward(
     # correct output, using this two index, we can get the probability
     # of the correct output
     loss = torch.sum(correct_logprobs) / N # compute the average loss
+    loss += reg * (torch.sum(W1 * W1) + torch.sum(W2 * W2) ) # add regularization term
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -271,19 +272,18 @@ def nn_forward_backward(
     dscores[torch.arange(N), y] -= 1 # to compute gradient of the last layer, subtract 1 from the correct class
     dscores /= N # average the gradient of the loss with respect to scores over all training examples in the batch, the shape of dscores is (N, C)
     # Backprop into W2 and b2 from the last layer scores to hidden layer h1
-
-    grads['W2'] = torch.matmul(h1.t(), dscores) # compute gradient of the loss with respect to W2
+    dhidden = torch.matmul(dscores, W2.t()) # compute gradient of the loss with respect to hidden layer h1
+    grads['W2'] = h1.t().mm(dscores) # compute gradient of the loss with respect to W2
     grads['b2'] = torch.sum(dscores, dim=0) # compute gradient of the loss with respect to b2, the shape of b2 is (C,)
     # Backprop into hidden layer h1
-    dhidden = torch.matmul(dscores, W2.t()) # compute gradient of the loss with respect to hidden layer h1
     # Backprop the ReLU non-linearity
     dhidden[h1 <= 0] = 0 # ReLU non-linearity
     # Backprop into W1 and b1
-    grads['W1'] = torch.matmul(X.t(), dhidden) # compute gradient of the loss with respect to W1
+    grads['W1'] = X.t().mm(dhidden) # compute gradient of the loss with respect to W1
     grads['b1'] = torch.sum(dhidden, dim=0) # compute gradient of the loss with respect to b1, the shape of b1 is (H,)
     # Add regularization gradient contribution
-    grads['W2'] += reg * W2
-    grads['W1'] += reg * W1
+    grads['W2'] +=  2* reg * W2
+    grads['W1'] +=  2* reg * W1
     ##################################################1######################
     #                             END OF YOUR CODE                            #
     ###########################################################################
