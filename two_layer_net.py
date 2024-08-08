@@ -463,8 +463,8 @@ def nn_get_search_params():
     ###########################################################################
     # Replace "pass" statement with your code
     learning_rates = [1e-3, 1e-2, 1e-1, 0.5, 1]
-    hidden_sizes = [128]
-    regularization_strengths = [1e-2]
+    hidden_sizes = [128,256,512]
+    regularization_strengths = [1, 1e-1, 1e-2]
     learning_rate_decays = [1.0, 0.95, 0.9, 0.925, 0.975]  
     ###########################################################################
     #                           END OF YOUR CODE                              #
@@ -537,6 +537,9 @@ def find_best_net(
     best_val_acc = 0.0
     best_lr = 0
     best_lrd = 0
+    best_hs = 0
+    beset_rs = 0 
+    
     for lr in learning_rates:
         for hs in hidden_sizes:
             for reg in regularization_strengths:
@@ -550,9 +553,12 @@ def find_best_net(
                         best_stat = stat
                         best_lr = lr
                         best_lrd = lrd
+                        best_hs = hs
+                        best_rs = reg
     #############################################################################
     #                               END OF YOUR CODE                            #
     #############################################################################
     print("best learining rate: " + str(best_lr))
     print("best learning rate decay: " + str(best_lrd))
+    print("best hidden size: " + str(best_hs))
     return best_net, best_stat, best_val_acc
